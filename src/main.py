@@ -6,10 +6,10 @@ import logging
 import sys
 import time
 import datetime as dt
-
 from pathlib import Path
 
 import cv2
+from picamera2 import Picamera2
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
@@ -44,12 +44,6 @@ def parse_args() -> argparse.Namespace:
         help="Capture a single frame and process it (for testing)",
     )
     parser.add_argument(
-        "--camera-index",
-        type=int,
-        default=0,
-        help="OpenCV camera index (default 0)",
-    )
-    parser.add_argument(
         "--display",
         action="store_true",
         help="Display video window with bounding boxes (debug)",
@@ -72,30 +66,32 @@ def main() -> None:
 
     args = parse_args()
 
-    cap = cv2.VideoCapture(args.camera_index)
-    if not cap.isOpened():
-        logger.error("Failed to open camera index %d", args.camera_index)
-        sys.exit(1)
-
-    # Basic camera settings (may or may not have effect depending on backend)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, cfg.camera.resolution[0])
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cfg.camera.resolution[1])
-    cap.set(cv2.CAP_PROP_FPS, cfg.camera.framerate)
+    # --- Camera setup via Picamera2 ---
+    picam2 = Picamera2()
+    video_config = picam2.create_video_configuration(
+        main={
+            "size": tuple(cfg.camera.resolution),
+            "format": "RGB888",  # Picamera2 will output RGB frames
+        }
+    )
+    picam2.configure(video_config)
+    picam2.start()
+    logger.info("Picamera2 started with resolution %s", cfg.camera.resolution)
 
     last_retention_check = dt.datetime.utcnow()
 
     try:
         while True:
-            ret, frame = cap.read()
-            if not ret:
-                logger.warning("Camera frame grab failed, retrying...")
-                time.sleep(0.1)
-                continue
+            # Capture a frame as RGB from Picamera2
+            frame_rgb = picam2.capture_array()
+            # Our pipeline expects BGR for OpenCV drawing
+            frame = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)
 
             now = dt.datetime.utcnow()
             with get_session() as session:
                 results = fr.process_frame(frame, session, now=now)
 
+            # Handle results (logging + MQTT)
             for r in results:
                 if r.recognized:
                     if r.ignored:
@@ -144,6 +140,7 @@ def main() -> None:
             mqtt_client.loop()
 
             if args.display:
+                # Draw boxes & labels
                 for r in results:
                     color = (0, 255, 0) if r.recognized else (0, 0, 255)
                     cv2.rectangle(
@@ -174,7 +171,7 @@ def main() -> None:
     except KeyboardInterrupt:
         logger.info("Interrupted by user")
     finally:
-        cap.release()
+        picam2.stop()
         if args.display:
             cv2.destroyAllWindows()
         logger.info("pi-face stopped")
@@ -182,3 +179,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
