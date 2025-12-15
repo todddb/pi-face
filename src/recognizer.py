@@ -35,6 +35,7 @@ class DetectionResult:
     distance: Optional[float]
     image_path: Path
     recognized: bool
+    ignored: bool
     attributes: Dict[str, Any]
 
 
@@ -146,23 +147,33 @@ class FaceRecognizer:
                     if person
                     else None
                 )
-                rel_path = Path("data/recognized_faces") / f"{person_id}_{timestamp_str}.jpg"
-                self._save_image(face_crop, rel_path)
+                ignored = bool(person.ignore) if person else False
 
-                rec = RecognizedFace(
-                    person_id=person_id,
-                    image_path=str(rel_path),
-                    attributes=attributes or None,
-                    distance=distance,
-                    detected_at=now,
-                )
-                session.add(rec)
-                logger.info(
-                    "Recognized %s (id=%s) at distance=%.3f",
-                    person_name or "unknown-name",
-                    person_id,
-                    distance or -1.0,
-                )
+                if ignored:
+                    rel_path = Path("data/recognized_faces") / f"ignored_{person_id}_{timestamp_str}.jpg"
+                    logger.info(
+                        "Ignoring recognized person %s (id=%s) due to ignore flag",
+                        person_name or "unknown-name",
+                        person_id,
+                    )
+                else:
+                    rel_path = Path("data/recognized_faces") / f"{person_id}_{timestamp_str}.jpg"
+                    self._save_image(face_crop, rel_path)
+
+                    rec = RecognizedFace(
+                        person_id=person_id,
+                        image_path=str(rel_path),
+                        attributes=attributes or None,
+                        distance=distance,
+                        detected_at=now,
+                    )
+                    session.add(rec)
+                    logger.info(
+                        "Recognized %s (id=%s) at distance=%.3f",
+                        person_name or "unknown-name",
+                        person_id,
+                        distance or -1.0,
+                    )
 
                 result = DetectionResult(
                     top=top_clamped,
@@ -174,6 +185,7 @@ class FaceRecognizer:
                     distance=distance,
                     image_path=rel_path,
                     recognized=True,
+                    ignored=ignored,
                     attributes=attributes,
                 )
             else:
@@ -201,6 +213,7 @@ class FaceRecognizer:
                     distance=distance,
                     image_path=rel_path,
                     recognized=False,
+                    ignored=False,
                     attributes=attributes,
                 )
 

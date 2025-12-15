@@ -45,6 +45,7 @@ def people():
             last = request.form.get("last_name", "").strip() or None
             email = request.form.get("email", "").strip() or None
             vip = request.form.get("vip") == "on"
+            ignore = request.form.get("ignore") == "on"
 
             if not first:
                 flash("First name is required", "error")
@@ -54,6 +55,7 @@ def people():
                     last_name=last,
                     email=email,
                     vip=vip,
+                    ignore=ignore,
                 )
                 session.add(person)
                 session.commit()

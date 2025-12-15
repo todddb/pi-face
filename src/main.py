@@ -94,6 +94,14 @@ def main() -> None:
 
             for r in results:
                 if r.recognized:
+                    if r.ignored:
+                        logger.debug(
+                            "Ignoring notifications for %s (id=%s)",
+                            r.person_name,
+                            r.person_id,
+                        )
+                        continue
+
                     logger.debug(
                         "Recognized %s (id=%s) at %s",
                         r.person_name,
