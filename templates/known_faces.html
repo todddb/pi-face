@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h2>Known faces</h2>
+    {% if not encodings %}
+        <p>No known face encodings stored.</p>
+    {% else %}
+        <div class="grid">
+        {% for enc in encodings %}
+            <div class="card">
+                {% if enc.image_path %}
+                    <img class="face" src="{{ url_for('serve_image', filename=enc.image_path) }}" alt="Known face">
+                {% endif %}
+                <p><strong>Person:</strong> {{ people.get(enc.person_id).first_name if people.get(enc.person_id) else 'Unknown' }} {{ people.get(enc.person_id).last_name if people.get(enc.person_id) else '' }}</p>
+                <p><strong>Created:</strong> {{ enc.created_at }}</p>
+                <form method="post" action="{{ url_for('delete_known_face', encoding_id=enc.id) }}">
+                    <button class="btn btn-danger btn-small" type="submit">Delete encoding</button>
+                </form>
+            </div>
+        {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

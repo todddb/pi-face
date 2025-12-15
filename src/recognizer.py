@@ -210,7 +210,14 @@ class FaceRecognizer:
         return results
 
     def _save_image(self, image_bgr: np.ndarray, rel_path: Path) -> None:
+        """Persist a face crop using RGB order so saved files look correct."""
+
         base = Path(__file__).resolve().parent.parent  # project root
         full = base / rel_path
         full.parent.mkdir(parents=True, exist_ok=True)
-        cv2.imwrite(str(full), image_bgr)
+
+        # The camera feed arrives in BGR from OpenCV. Converting to RGB keeps
+        # saved JPEGs from appearing blue when viewed in browsers or other
+        # RGB-based tools.
+        rgb_image = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+        cv2.imwrite(str(full), rgb_image)

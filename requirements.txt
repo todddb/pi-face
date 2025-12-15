@@ -11,6 +11,7 @@ face-recognition
 SQLAlchemy
 pydantic
 python-dotenv
+Flask
 
 # For future MQTT integration (optional for now)
 paho-mqtt
