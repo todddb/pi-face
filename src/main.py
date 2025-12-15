@@ -11,11 +11,15 @@ from pathlib import Path
 
 import cv2
 
-from .config import load_config
-from .db import init_db, get_session
-from .mqtt_client import MQTTClient
-from .recognizer import FaceRecognizer
-from .retention import prune_old_faces
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.config import load_config
+from src.db import init_db, get_session
+from src.mqtt_client import MQTTClient
+from src.recognizer import FaceRecognizer
+from src.retention import prune_old_faces
 
 
 def setup_logging(log_path: Path, level_str: str) -> None:
