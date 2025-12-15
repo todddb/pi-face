@@ -10,6 +10,10 @@ __pycache__/
 # Face data + logs (don’t commit actual images of people)
 data/
 logs/
+pi_face.db
+
+# Local database paths/configs
+config/config.local.yaml
 
 # Local config (optional – or keep a sample instead)
 config/config.yaml
