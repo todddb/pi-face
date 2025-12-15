@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h2>Unrecognized faces</h2>
+    {% if not faces %}
+        <p>No unrecognized faces stored.</p>
+    {% else %}
+        <div class="grid">
+        {% for face in faces %}
+            <div class="card">
+                <img class="face" src="{{ url_for('serve_image', filename=face.image_path) }}" alt="Unrecognized face">
+                <p><strong>Detected:</strong> {{ face.detected_at }}</p>
+                <p><strong>Attributes:</strong> {{ face.attributes or '—' }}</p>
+                <form method="post" action="{{ url_for('assign_unrecognized', face_id=face.id) }}">
+                    <label for="person_id_{{ face.id }}">Assign to person</label>
+                    <select id="person_id_{{ face.id }}" name="person_id" required>
+                        <option value="" disabled selected>Select…</option>
+                        {% for p in people %}
+                            <option value="{{ p.id }}">{{ p.first_name }} {{ p.last_name or '' }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-primary btn-small" type="submit" style="margin-top: 0.5rem;">Assign</button>
+                </form>
+                <p style="margin-top: 0.5rem;">Need a new person? <a href="{{ url_for('people') }}">Create one</a>.</p>
+            </div>
+        {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
