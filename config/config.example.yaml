@@ -1,0 +1,45 @@
+# pi-face configuration
+
+camera:
+  # rpicam-vid / rpicam-hello base options later if you want them here
+  resolution: [1280, 720]
+  framerate: 15
+
+storage:
+  base_dir: "./data"
+  known_faces_dir: "./data/known_faces"
+  unknown_faces_dir: "./data/unknown_faces"
+  recognized_faces_dir: "./data/recognized_faces"
+
+retention_days:
+  unknown_faces: 30       # how long to keep unrecognized faces
+  recognized_faces: 3     # how long to keep snapshots of recognized faces
+
+database:
+  url: "sqlite:///./pi_face.db"  # will live at ~/pi-face/pi_face.db
+
+recognition:
+  # distance thresholds depend on the embedding model
+  # these are good starting points for dlib/face_recognition
+  tolerance: 0.45
+  # how often (in seconds) to re-encode the same person if they stay in view
+  min_reencode_interval: 2.0
+
+attributes:
+  # attributes you *plan* to support (age, gender, expression, glasses, etc.)
+  # actual implementation will come later in code
+  enabled: true
+  estimate_age: true
+  estimate_gender: true
+  estimate_emotion: true
+  detect_glasses: true
+
+mqtt:
+  enabled: false
+  host: "localhost"
+  port: 1883
+  topic_prefix: "pi-face"
+
+logging:
+  level: "INFO"
+  file: "./logs/pi-face.log"

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtualenv
+.venv/
+
+# Face data + logs (don’t commit actual images of people)
+data/
+logs/
+
+# Local config (optional – or keep a sample instead)
+config/config.yaml
+
+# OS/editor
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/

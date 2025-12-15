@@ -1,0 +1,17 @@
+# Core numerics & imaging
+numpy
+opencv-python
+Pillow
+
+# Face detection / recognition (dlib + face_recognition)
+dlib
+face-recognition
+
+# Database & config / modeling
+SQLAlchemy
+pydantic
+python-dotenv
+
+# For future MQTT integration (optional for now)
+paho-mqtt
+PyYAML
