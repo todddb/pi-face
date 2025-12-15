@@ -14,6 +14,8 @@
 
         <label><input type="checkbox" name="vip"> VIP</label>
 
+        <label><input type="checkbox" name="ignore"> Ignore (no tracking or alerts)</label>
+
         <button class="btn btn-primary" type="submit" style="margin-top: 0.75rem;">Create</button>
     </form>
 </div>
@@ -26,6 +28,7 @@
                 <th>Name</th>
                 <th>Email</th>
                 <th>VIP</th>
+                <th>Ignore</th>
                 <th>Created</th>
             </tr>
         </thead>
@@ -35,6 +38,7 @@
                 <td>{{ p.first_name }} {{ p.last_name or '' }}</td>
                 <td>{{ p.email or '—' }}</td>
                 <td>{{ 'Yes' if p.vip else 'No' }}</td>
+                <td>{{ 'Yes' if p.ignore else 'No' }}</td>
                 <td>{{ p.created_at }}</td>
             </tr>
             {% endfor %}

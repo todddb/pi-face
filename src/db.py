@@ -16,6 +16,7 @@ from sqlalchemy import (
     Text,
     JSON,
     create_engine,
+    text,
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session
 
@@ -29,6 +30,8 @@ def init_db(database_url: str) -> None:
     global _engine, SessionLocal
     _engine = create_engine(database_url, future=True)
     SessionLocal = sessionmaker(bind=_engine, autoflush=False, autocommit=False)
+
+    _ensure_schema(_engine)
     Base.metadata.create_all(_engine)
 
 
@@ -36,6 +39,19 @@ def get_session() -> Session:
     if SessionLocal is None:
         raise RuntimeError("Database not initialized. Call init_db() first.")
     return SessionLocal()
+
+
+def _ensure_schema(engine) -> None:
+    """Lightweight compatibility shim until full migrations are added."""
+
+    if engine.dialect.name != "sqlite":
+        return
+
+    with engine.begin() as conn:
+        info = conn.execute(text("PRAGMA table_info(people)"))
+        columns = {row[1] for row in info.fetchall()}
+        if "ignore" not in columns:
+            conn.execute(text("ALTER TABLE people ADD COLUMN ignore BOOLEAN DEFAULT 0"))
 
 
 class Person(Base):
@@ -46,6 +62,7 @@ class Person(Base):
     last_name = Column(String(100), nullable=True)
     email = Column(String(255), nullable=True)
     vip = Column(Boolean, default=False)
+    ignore = Column(Boolean, default=False)
     created_at = Column(DateTime, default=dt.datetime.utcnow)
     updated_at = Column(DateTime, default=dt.datetime.utcnow, onupdate=dt.datetime.utcnow)
 
